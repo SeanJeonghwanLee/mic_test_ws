@@ -30,6 +30,7 @@ class AudioSubscriber(Node):
                                                           10)
         self.subscription # prevent unused variable warning
 
+        self.sample_rate = 44_100
         # Configure Loguru to set default verbosity to INFO
         logger.remove()  # Remove the default handler
         logger.add(sys.stderr, level="INFO")  # Add a handler to stderr with INFO level
@@ -40,12 +41,15 @@ class AudioSubscriber(Node):
         # logger.add(f"logfile_{current_time}.txt")
         
         # Sleep 2 seconds for launch file
-        time.sleep(5)
+        time.sleep(10)
         logger.info("Wait 2 seconds for launch file")
 
     def audio_callback(self, msg:AudioData) -> None:
         logger.debug(f"Received audio data: {msg.data}")
-        self.get_logger().info(f"Received audio data")
+        recorded_data = np.array(msg.data, dtype=np.float32)
+        filename = f"audio_saved/audio_{str(time.time())}.wav"
+        sf.write(filename, recorded_data, self.sample_rate)
+        self.get_logger().info(f"Received audio data!")
 
     def audio_info_callback(self, msg:AudioInfo) -> None:
         logger.info(f"Received audio info: {msg.uuid}")
